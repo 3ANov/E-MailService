@@ -79,6 +79,7 @@ public class Main {
 // Получение и проверка словаря "почтового ящика",
 //   где по получателю можно получить список зарплат, которые были ему отправлены.
         Map<String, List<Integer>> salaries = salaryService.getMailBox();
+
         assert salaries.get(salary1.getTo()).equals(Arrays.asList(1)): "wrong salaries mailbox content (1)";
         assert salaries.get(salary2.getTo()).equals(Arrays.asList(Integer.MAX_VALUE)): "wrong salaries mailbox content (2)";
         assert salaries.get(randomTo).equals(Arrays.asList(randomSalary)): "wrong salaries mailbox content (3)";
@@ -90,23 +91,27 @@ public class Main {
 Интерфейс: сущность, которую можно отправить по почте.
 У такой сущности можно получить от кого и кому направляется письмо.
 */
-    public static interface Sendable {
+    public static interface Sendable<T> {
         String getFrom();
         String getTo();
+        T getContent();
     }
 
+
+
     /*
-Абстрактный класс,который позволяет абстрагировать логику хранения
-источника и получателя письма в соответствующих полях класса.
+Письмо, у которого есть текст, который можно получить с помощью метода `getContent`
 */
-    public static abstract class AbstractSendable implements Sendable {
+    public static class MailMessage implements Sendable<String> {
 
-        protected final String from;
-        protected final String to;
+        private final String from;
+        private final String to;
+        private final String message;
 
-        public AbstractSendable(String from, String to) {
+        public MailMessage(String from, String to, String message) {
             this.from = from;
             this.to = to;
+            this.message = message;
         }
 
         @Override
@@ -117,32 +122,6 @@ public class Main {
         @Override
         public String getTo() {
             return to;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            AbstractSendable that = (AbstractSendable) o;
-
-            if (!from.equals(that.from)) return false;
-            if (!to.equals(that.to)) return false;
-
-            return true;
-        }
-
-    }
-    /*
-Письмо, у которого есть текст, который можно получить с помощью метода `getContent`
-*/
-    public static class MailMessage extends AbstractSendable {
-
-        private final String message;
-
-        public MailMessage(String from, String to, String message) {
-            super(from, to);
-            this.message = message;
         }
 
         public String getContent() {
@@ -164,21 +143,60 @@ public class Main {
 
     }
 
-    public static class Salary extends AbstractSendable{
+    public static class Salary implements Sendable<Integer>{
+
+        private final String from;
+        private final String to;
         private final Integer salary;
 
         public Salary(String from, String to, Integer salary) {
-            super(from, to);
+
+            this.from = from;
+            this.to = to;
             this.salary = salary;
+        }
+
+        @Override
+        public String getFrom() {
+            return from;
+        }
+
+        @Override
+        public String getTo() {
+            return to;
+        }
+
+        @Override
+        public Integer getContent() {
+            return salary;
         }
 
         // implement here
     }
 
-    public static class MailService<T> extends HashMap implements Consumer {
+    public static class MailService<T> extends HashMap<String,List<T>> implements Consumer<Sendable<T>> {
+        protected Map<String,List<T>> mails;
+
+
+
+
+
+        public Map<String, List<String>> getMailBox() {
+            return Stream.of(mails).collect(Collectors.groupingBy());
+        }
+
+        public List<T> get(String key) {
+
+            if(key != null){
+                return mails.;
+            }
+            else
+            return super.getOrDefault(key, defaultValue);
+        }
 
         @Override
-        public void accept(Object o) {
-
+        public void accept(Sendable<T> tSendable) {
+            mails.put(tSendable.getTo(), (List<T>) tSendable.getContent());
         }
     }
+}
