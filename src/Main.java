@@ -88,6 +88,7 @@ public class Main {
     /*
 Интерфейс: сущность, которую можно отправить по почте.
 У такой сущности можно получить от кого и кому направляется письмо.
+Пришлось добавить getContent, чтобы можно было это в mailservice обррабатывать
 */
     public static interface Sendable<T> {
         String getFrom();
@@ -129,6 +130,7 @@ public class Main {
 
     }
 
+//тут с Salary вроде всё понятно
     public static class Salary implements Sendable<Integer>{
 
         private final String from;
@@ -159,11 +161,13 @@ public class Main {
 
         // implement here
     }
-
+//долго парился с добавлением элементов. Надо понимать как работает HashMap и знать, что если ключ найден в мапе,
+    //то он перезаписывает данные с новым значением
     public static class MailService<T> extends HashMap<String,List<T>> implements Consumer<Sendable<T>> {
         private Map<String,List<T>> mails = new HashMap<String, List<T>>(){
             @Override
             public List<T> get(Object key) {
+                //возвращает значение если есть - и создаёт пустой linked list, если нет такого ключа
                     return super.getOrDefault(key,new LinkedList<T>());
             }
         };
@@ -182,7 +186,7 @@ public class Main {
         }
 
 
-
+        //взято отсюда http://qaru.site/questions/1217948/java-adding-another-string-value-to-existing-hashmap-key-without-overwriting
         @Override
         public void accept(Sendable<T> tSendable) {
             List<T> inpList;
