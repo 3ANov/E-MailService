@@ -128,18 +128,6 @@ public class Main {
             return message;
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            if (!super.equals(o)) return false;
-
-            MailMessage that = (MailMessage) o;
-
-            if (message != null ? !message.equals(that.message) : that.message != null) return false;
-
-            return true;
-        }
 
     }
 
@@ -175,28 +163,46 @@ public class Main {
     }
 
     public static class MailService<T> extends HashMap<String,List<T>> implements Consumer<Sendable<T>> {
-        protected Map<String,List<T>> mails;
+        private Map<String,List<T>> mails = new HashMap<>();
 
 
-
-
-
-        public Map<String, List<String>> getMailBox() {
-            return Stream.of(mails).collect(Collectors.groupingBy());
+        @Override
+        public List<T> get(Object key) {
+            if (mails.containsKey(key)) {
+                return mails.get(key);
+            } else return super.getOrDefault(key, new LinkedList<>());
         }
 
-        public List<T> get(String key) {
 
-            if(key != null){
-                return mails.;
-            }
-            else
-            return super.getOrDefault(key, defaultValue);
+
+
+
+        public Map<String, List<T>> getMailBox() {
+            return mails;
         }
+
+
 
         @Override
         public void accept(Sendable<T> tSendable) {
-            mails.put(tSendable.getTo(), (List<T>) tSendable.getContent());
+            List<T> inpList;
+            //inpList.add(tSendable.getContent());
+            //mails.put(tSendable.getTo(),inpList);
+
+
+            if(mails.containsKey(tSendable.getTo())){
+                // if the key has already been used,
+                // we'll just grab the array list and add the value to it
+                inpList = mails.get(tSendable.getTo());
+                inpList.add(tSendable.getContent());
+            } else {
+                // if the key hasn't been used yet,
+                // we'll create a new ArrayList<String> object, add the value
+                // and put it in the array list with the new key
+                inpList = new LinkedList<>();
+                inpList.add(tSendable.getContent());
+                mails.put(tSendable.getTo(), inpList);
+            }
         }
     }
 }
