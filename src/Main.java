@@ -1,8 +1,6 @@
 import java.util.*;
 import java.util.function.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-//import java.util.stream.Stream;
+
 
 public class Main {
 
@@ -163,15 +161,17 @@ public class Main {
     }
 
     public static class MailService<T> extends HashMap<String,List<T>> implements Consumer<Sendable<T>> {
-        private Map<String,List<T>> mails = new HashMap<>();
+        private Map<String,List<T>> mails = new HashMap<String, List<T>>(){
+            @Override
+            public List<T> get(Object key) {
+                    return super.getOrDefault(key,new LinkedList<T>());
+            }
+        };
 
 
-        @Override
-        public List<T> get(Object key) {
-            if (mails.containsKey(key)) {
-                return mails.get(key);
-            } else return super.getOrDefault(key, new LinkedList<>());
-        }
+
+
+
 
 
 
